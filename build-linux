@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -ex
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+TAG="dcs-installer-build"
+
+cd $DIR
+
+rm -rf dist
+mkdir -p dist
+
+docker build --rm -t "$TAG"  -f ./DockerfileBuild .
+if docker inspect dcs-installer-dist 2>&1 > /dev/null; then
+	docker rm dcs-installer-dist
+fi
+
+docker create \
+  --name=dcs-installer-dist \
+  --user=user \
+  --entrypoint="./build-linux-inner" \
+  "$TAG"
+
+docker cp dcs-installer-dist:/usr/src/app/dist/dcs_installer dist/dcs_installer
+docker rm -f dcs-installer-dist

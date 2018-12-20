@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -ex
+
+mkdir -p `pwd`/dist
+
+pyinstaller --onefile dcs_installer.py
+
+cd `pwd`/dist
+
+find .
+
+chmod +x dcs_installer
+

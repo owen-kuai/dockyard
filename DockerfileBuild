@@ -1,0 +1,30 @@
+FROM daocloud.io/centos:7.3.1611
+
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+RUN mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+RUN curl http://mirrors.163.com/.help/CentOS7-Base-163.repo -o /etc/yum.repos.d/CentOS-Base.repo
+
+RUN yum install -y epel-release
+RUN yum install -y python36
+
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN python36 get-pip.py
+
+ENV PYTHONPATH /usr/src/app
+
+COPY ./requirements-build.txt /usr/src/app/
+
+RUN pip3 install -i https://pypi.doubanio.com/simple --upgrade pip
+RUN pip3 install -r requirements-build.txt -i https://pypi.doubanio.com/simple
+
+RUN useradd user
+
+COPY . /usr/src/app
+
+RUN mkdir -p /home/user
+RUN chown -R user /home/user
+RUN chown -R user /usr/src/app
+
+RUN ./build-linux-inner
